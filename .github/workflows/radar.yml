@@ -1,15 +1,12 @@
 name: InmoRadar - Buscador de Departamentos
 
 on:
-  # 1. Ejecución automática cada 4 horas
   schedule:
     - cron: '0 */4 * * *'
-
-  # 2. Panel interactivo para ejecutar búsquedas manuales desde GitHub Web / Mobile
   workflow_dispatch:
     inputs:
       override_ciudad:
-        description: 'Ciudad (Déjalo vacío para usar tu config.yaml)'
+        description: 'Ciudad (Dejalo vacio para usar tu config.yaml)'
         required: false
         default: ''
       override_zonas:
@@ -17,11 +14,11 @@ on:
         required: false
         default: ''
       override_precio_max:
-        description: 'Precio máximo (Opcional)'
+        description: 'Precio maximo (Opcional)'
         required: false
         default: ''
       override_personas:
-        description: 'Número de personas (Opcional)'
+        description: 'Numero de personas (Opcional)'
         required: false
         default: ''
 
@@ -36,11 +33,16 @@ jobs:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
+      - name: Preparar archivos automaticamente
+        run: |
+          find . -maxdepth 3 -iname "requirements.txt" ! -path "./requirements.txt" -exec cp {} ./requirements.txt \;
+          find . -maxdepth 3 -iname "config.yaml" ! -path "./config.yaml" -exec cp {} ./config.yaml \;
+          find . -maxdepth 3 -iname "main.py" ! -path "./main.py" -exec cp {} ./main.py \;
+
       - name: Configurar Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Instalar dependencias
         run: pip install -r requirements.txt
@@ -54,12 +56,13 @@ jobs:
           OVERRIDE_PERSONAS: ${{ github.event.inputs.override_personas }}
         run: python main.py
 
-      - name: Guardar historial de departamentos vistos (Evitar duplicados)
+      - name: Guardar historial de departamentos vistos
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           if [ -f seen_listings.json ]; then
             git add seen_listings.json
-            git diff --staged --quiet || git commit -m "chore: actualizar historial de departamentos [skip ci]"
+            git diff --staged --quiet || git commit -m "chore: actualizar historial [skip ci]"
             git push
           fi
+          
