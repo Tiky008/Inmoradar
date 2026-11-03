@@ -8,7 +8,7 @@ configuracion_global:
   costo_estimado_servicios_extra: 650
   
   # Puntaje mínimo (de 0 a 100) para que valga la pena notificarte en Discord
-  score_minimo_notificacion: 45
+  score_minimo_notificacion: 10
   
   # Límite de notificaciones por ejecución para no saturar tu canal
   max_notificaciones_por_corrida: 10
