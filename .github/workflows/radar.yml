@@ -1,0 +1,66 @@
+
+ name: InmoRadar - Buscador de Departamentos
+
+on:
+  # 1. Ejecución automática cada 4 horas
+  schedule:
+    - cron: '0 */4 * * *'
+
+  # 2. Panel interactivo para ejecutar búsquedas manuales desde GitHub Web / Mobile
+  workflow_dispatch:
+    inputs:
+      override_ciudad:
+        description: 'Ciudad (Déjalo vacío para usar tu config.yaml)'
+        required: false
+        default: ''
+      override_zonas:
+        description: 'Zonas separadas por coma (Opcional)'
+        required: false
+        default: ''
+      override_precio_max:
+        description: 'Precio máximo (Opcional)'
+        required: false
+        default: ''
+      override_personas:
+        description: 'Número de personas (Opcional)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  buscar-departamentos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar Motor InmoRadar
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          OVERRIDE_CIUDAD: ${{ github.event.inputs.override_ciudad }}
+          OVERRIDE_ZONAS: ${{ github.event.inputs.override_zonas }}
+          OVERRIDE_PRECIO_MAX: ${{ github.event.inputs.override_precio_max }}
+          OVERRIDE_PERSONAS: ${{ github.event.inputs.override_personas }}
+        run: python main.py
+
+      - name: Guardar historial de departamentos vistos (Evitar duplicados)
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          if [ -f seen_listings.json ]; then
+            git add seen_listings.json
+            git diff --staged --quiet || git commit -m "chore: actualizar historial de departamentos [skip ci]"
+            git push
+          fi
