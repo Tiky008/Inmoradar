@@ -1,0 +1,84 @@
+# =====================================================================
+# CONFIGURACIÓN GLOBAL DE INMORADAR
+# =====================================================================
+configuracion_global:
+  moneda: "MXN"
+  # Cuánto sumar al precio mentalmente si el depa NO incluye servicios
+  # (sirve para comparar justamente contra los que sí incluyen agua/luz/internet)
+  costo_estimado_servicios_extra: 650
+  
+  # Puntaje mínimo (de 0 a 100) para que valga la pena notificarte en Discord
+  score_minimo_notificacion: 45
+  
+  # Límite de notificaciones por ejecución para no saturar tu canal
+  max_notificaciones_por_corrida: 10
+  
+  # Detectar posibles estafas (precios absurdamente bajos para la media)
+  precio_minimo_anti_estafa: 1200
+
+# =====================================================================
+# PERFILES DE BÚSQUEDA (Puedes agregar todos los que quieras)
+# Regla de oro: Si dejas un campo en `null` o `[]`, el filtro se desactiva
+# y busca de forma general sin exigir ese requisito.
+# =====================================================================
+perfiles_busqueda:
+
+  - nombre: "Loft o Depa 2 Personas (Búsqueda Específica)"
+    activo: true
+    ciudad_estado: "Puebla"              # Ej: "Puebla", "Xalapa Veracruz", "CDMX"
+    tipo_inmueble: "departamento"        # "departamento", "cuarto", "casa", o null para todos
+    
+    # --- ZONAS ---
+    # Si pones zonas, priorizará o filtrará por ellas. Si dejas [], busca en toda la ciudad.
+    zonas:
+      - "San Manuel"
+      - "Universidades"
+      - "Valsequillo"
+      - "CU"
+    zona_estricta: false                 # true = descarta si no menciona la zona | false = solo baja puntos
+    
+    # --- PRESUPUESTO ---
+    precio_min: 2000                     # Pon null si no quieres mínimo
+    precio_max: 5500                     # Pon null si no quieres tope máximo
+    usar_costo_real_con_servicios: true  # Evalúa el tope sumando servicios si no están incluidos
+    
+    # --- CAPACIDAD Y SERVICIOS ---
+    personas: 2                          # Número de habitantes (1, 2, 3... o null para cualquiera)
+    con_servicios: true                  # true = prioriza/exige servicios | false = sin servicios | null = indiferente
+    servicios_estricto: false            # true = ignora anuncios que no mencionen servicios | false = los acepta pero avisa
+    
+    # --- ESPECIFICACIONES Y FILTROS DE TEXTO ---
+    especificaciones_deseadas:           # Cada coincidencia sube el Match Score del departamento
+      - "amueblado"
+      - "internet"
+      - "agua"
+      - "independiente"
+      - "loft"
+      - "estufa"
+    
+    palabras_excluyentes:                # Si aparecen en el anuncio, se descarta automáticamente
+      - "solo mujeres"
+      - "solo señoritas"
+      - "traspaso"
+      - "venta"
+
+  - nombre: "Exploración General Zona Universitaria"
+    activo: true
+    ciudad_estado: "Xalapa Veracruz"
+    tipo_inmueble: null                  # null = busca departamentos, estudios, lofts y cuartos
+    zonas:
+      - "Zona Universitaria"
+      - "USBI"
+      - "Lomas del Estadio"
+      - "Centro"
+    zona_estricta: false
+    precio_min: null
+    precio_max: 5000
+    usar_costo_real_con_servicios: false
+    personas: null                       # null = sin restricción de personas
+    con_servicios: null                  # null = con o sin servicios
+    servicios_estricto: false
+    especificaciones_deseadas: []        # [] = sin especificaciones obligatorias
+    palabras_excluyentes:
+      - "venta"
+      - "terreno"
