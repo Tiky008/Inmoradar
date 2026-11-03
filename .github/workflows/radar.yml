@@ -1,4 +1,4 @@
- name: InmoRadar - Buscador de Departamentos
+name: InmoRadar - Buscador de Departamentos
 
 on:
   # 1. Ejecución automática cada 4 horas
