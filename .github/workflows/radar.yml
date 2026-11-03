@@ -1,6 +1,11 @@
 name: InmoRadar - Buscador de Departamentos
 
 on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'seen_listings.json'
   schedule:
     - cron: '0 */4 * * *'
   workflow_dispatch:
