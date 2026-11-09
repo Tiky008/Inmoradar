@@ -1,0 +1,61 @@
+import requests
+import os
+from bs4 import BeautifulSoup
+
+# Asegúrate de que el nombre del Secret coincida exactamente con lo que tienes en GitHub
+WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK")
+
+def enviar_alerta_discord(mensaje):
+    """Envía un mensaje básico a Discord para pruebas y errores."""
+    if not WEBHOOK_URL:
+        print("Error interno: La URL del Webhook no se cargó desde los Secrets.")
+        return
+    
+    data = {"content": mensaje}
+    respuesta = requests.post(WEBHOOK_URL, json=data)
+    
+    if respuesta.status_code == 204:
+        print("Mensaje enviado a Discord exitosamente.")
+    else:
+        print(f"Error al enviar a Discord: {respuesta.status_code} - {respuesta.text}")
+
+def revisar_inmobiliaria(url):
+    # Simular que somos un navegador real desde México
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "es-MX,es;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        # Evaluar el código de respuesta HTTP
+        if response.status_code == 403:
+            enviar_alerta_discord(f"🚨 **Bloqueo detectado:** La página de bienes raíces rechazó la conexión de GitHub Actions (Error 403).")
+            return
+        elif response.status_code != 200:
+            enviar_alerta_discord(f"⚠️ **Error de conexión:** Código HTTP {response.status_code} al revisar la página.")
+            return
+            
+        # Si llegamos aquí, la página cargó. Vamos a revisar si obtuvimos el HTML real o un Captcha.
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # EJEMPLO: Si buscas por una clase específica. 
+        # Cambia 'div' y 'tarjeta-propiedad' por las etiquetas reales de la página que revisas.
+        propiedades = soup.find_all('div', class_='tarjeta-propiedad') 
+        
+        if len(propiedades) == 0:
+            enviar_alerta_discord("🔍 **Aviso:** La página cargó, pero no se encontraron propiedades. Es posible que hayan cambiado el diseño HTML o que te hayan mandado a un Captcha.")
+        else:
+            enviar_alerta_discord(f"✅ **Éxito:** Se encontraron {len(propiedades)} departamentos. ¡El scraping funciona!")
+            # Aquí agregarías la lógica para enviar los datos detallados (precio, link, etc.)
+            
+    except Exception as e:
+        enviar_alerta_discord(f"❌ **Error en el código de Python:** {str(e)}")
+
+# Prueba inicial para confirmar que el Webhook sirve
+enviar_alerta_discord("🤖 InmoRadar ha iniciado su revisión programada...")
+
+# Reemplaza con la URL de la zona que estás monitoreando
+revisar_inmobiliaria("URL_DE_LA_PAGINA_AQUI")
